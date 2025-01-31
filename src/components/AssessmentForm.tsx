@@ -1,5 +1,6 @@
 "use client";
 
+import useUser from "@/store/useUser";
 import { FiTrash } from "react-icons/fi";
 import { GrAdd, GrFormCheckmark, GrFormClose } from "react-icons/gr";
 import TextareaAutosize from "react-textarea-autosize";
@@ -101,6 +102,7 @@ const Question = ({
   handleAddOption,
   completed,
 }: QuestionProps) => {
+  const { currentUser } = useUser();
   return (
     <div
       className={`flex flex-col gap-4 border-4 border-sky-300 p-4 rounded-lg bg-white ${
@@ -115,16 +117,18 @@ const Question = ({
           </p>
           <p className="text-black font-medium text-xl py-2">Question</p>
         </div>
-        <button
-          disabled={completed}
-          onClick={() => handleDeleteQuestion(questionIndex)}
-          className="bg-violet-300 py-2 hover:bg-violet-200 hover:text-black/70 h-full transition-all duration-300 text-black font-medium text-lg rounded-md px-2"
-        >
-          <FiTrash size={24} />
-        </button>
+        {currentUser?.role === "teacher" && (
+          <button
+            disabled={completed}
+            onClick={() => handleDeleteQuestion(questionIndex)}
+            className="bg-violet-300 py-2 hover:bg-violet-200 hover:text-black/70 h-full transition-all duration-300 text-black font-medium text-lg rounded-md px-2"
+          >
+            <FiTrash size={24} />
+          </button>
+        )}
       </div>
       <TextareaAutosize
-        disabled={completed}
+        disabled={completed || currentUser?.role === "student"}
         value={question}
         onChange={(e) => handleQuestionUpdate(questionIndex, e.target.value)}
         className="w-full outline-0 text-lg resize-none p-3 font-medium bg-neutral-200 rounded-md read-only:cursor-default"
@@ -132,7 +136,13 @@ const Question = ({
       />
       <p className="text-black font-medium text-base">Answers</p>
       {/* ### ANSWERS ### */}
-      <div className="grid grid-cols-[auto_1fr_auto_auto] gap-5 items-center">
+      <div
+        className={`grid ${
+          currentUser?.role == "teacher"
+            ? "grid-cols-[auto_1fr_auto_auto]"
+            : "grid-cols-[auto_1fr]"
+        } gap-5 items-center`}
+      >
         {options.map((option, optionIndex) => {
           const isAnswer = option === correctAnswer;
           return (
@@ -146,7 +156,7 @@ const Question = ({
               </p>
               {/* Option */}
               <TextareaAutosize
-                disabled={completed}
+                disabled={completed || currentUser?.role === "student"}
                 value={option}
                 className="w-full outline-0 text-base resize-none p-2 bg-neutral-200 rounded-md read-only:cursor-default"
                 placeholder="Enter the option"
@@ -155,41 +165,51 @@ const Question = ({
                 }
               />
               {/* Answer */}
-              <button
-                onClick={() => handleAnswerUpdate(questionIndex, option)}
-                disabled={completed}
-                key={`${questionIndex}-${option}_answer`}
-                className={` ${
-                  isAnswer ? "bg-sky-300 " : "bg-sky-100 hover:bg-sky-200"
-                } hover:text-black/70 h-full transition-all duration-300 text-black font-medium text-lg rounded-md px-2`}
-              >
-                {isAnswer ? (
-                  <GrFormCheckmark size={22} />
-                ) : (
-                  <GrFormClose size={22} />
-                )}
-              </button>
-              {/* Delete Option */}
-              <button
-                onClick={() => handleDeleteOption(questionIndex, optionIndex)}
-                disabled={completed}
-                key={`${optionIndex}-${option}_delete`}
-                className="bg-violet-300 hover:bg-violet-200 hover:text-black/70 h-full transition-all duration-300 text-black font-medium text-lg rounded-md px-2"
-              >
-                <FiTrash />
-              </button>
+              {currentUser?.role === "teacher" && (
+                <>
+                  <button
+                    onClick={() => handleAnswerUpdate(questionIndex, option)}
+                    disabled={completed}
+                    key={`${questionIndex}-${option}_answer`}
+                    className={` ${
+                      isAnswer ? "bg-sky-300 " : "bg-sky-100 hover:bg-sky-200"
+                    } hover:text-black/70 h-full transition-all duration-300 text-black font-medium text-lg rounded-md px-2`}
+                  >
+                    {isAnswer ? (
+                      <GrFormCheckmark size={22} />
+                    ) : (
+                      <GrFormClose size={22} />
+                    )}
+                  </button>
+                  {/* Delete Option */}
+                  <button
+                    onClick={() =>
+                      handleDeleteOption(questionIndex, optionIndex)
+                    }
+                    disabled={completed}
+                    key={`${optionIndex}-${option}_delete`}
+                    className="bg-violet-300 hover:bg-violet-200 hover:text-black/70 h-full transition-all duration-300 text-black font-medium text-lg rounded-md px-2"
+                  >
+                    <FiTrash />
+                  </button>
+                </>
+              )}
             </>
           );
         })}
-        {/* ### ADD OPTION BUTTON ### */}
-        <button
-          onClick={() => handleAddOption(questionIndex)}
-          disabled={completed}
-          className="text-black font-medium text-lg self-center h-full content-center bg-violet-300 hover:bg-violet-200 hover:text-black/70 transition-all duration-300 w-8 text-center rounded-md py-2"
-        >
-          <GrAdd className="mx-auto" size={16} />
-        </button>
-        <p>Add Option</p>
+        {currentUser?.role === "teacher" && (
+          <>
+            {/* ### ADD OPTION BUTTON ### */}
+            <button
+              onClick={() => handleAddOption(questionIndex)}
+              disabled={completed}
+              className="text-black font-medium text-lg self-center h-full content-center bg-violet-300 hover:bg-violet-200 hover:text-black/70 transition-all duration-300 w-8 text-center rounded-md py-2"
+            >
+              <GrAdd className="mx-auto" size={16} />
+            </button>
+            <p>Add Option</p>
+          </>
+        )}
       </div>
     </div>
   );
