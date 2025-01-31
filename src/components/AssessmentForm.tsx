@@ -103,7 +103,7 @@ const Question = ({
 }: QuestionProps) => {
   return (
     <div
-      className={`flex flex-col gap-4 border-4 border-sky-300 p-4 rounded-lg ${
+      className={`flex flex-col gap-4 border-4 border-sky-300 p-4 rounded-lg bg-white ${
         completed && "opacity-50 cursor-not-allowed"
       }`}
     >

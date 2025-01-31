@@ -34,4 +34,6 @@ interface Assessment {
   endDate?: Date;
   course?: Course;
   topic?: string;
+  createdAt: string;
+  updatedAt: string;
 }

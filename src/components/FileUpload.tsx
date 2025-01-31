@@ -24,7 +24,7 @@ const FileUpload = ({
 
   return (
     <div
-      className={` border-dashed border-sky-300 rounded-xl  text-center flex ${
+      className={` border-dashed border-sky-300 rounded-xl bg-white  text-center flex ${
         !uploaded
           ? "flex-col p-8 border-4"
           : "flex-row bg-sky-100 items-center p-4 border-2"

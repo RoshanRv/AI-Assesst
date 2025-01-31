@@ -99,9 +99,7 @@ export default function Header() {
                   {currentUser?.role}
                 </p>
               </div>
-              <button>
-                <IoChevronDown className="w-4 h-4 text-neutral-500" />
-              </button>
+              <IoChevronDown className="w-4 h-4 text-neutral-500" />
             </button>
 
             {/* ## DROPDOWN MENU ## */}

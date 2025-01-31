@@ -124,7 +124,7 @@ export default function GenerateAssessment() {
   };
 
   return (
-    <main className="min-h-screen p-8 bg-white mb-20">
+    <main className="min-h-[calc(100vh-90px)] p-8 mb-20 bg-neutral-50">
       <div className="max-w-2xl mx-auto flex flex-col gap-8">
         <h1 className="text-4xl font-semibold mb-8 text-black underline underline-offset-8 decoration-4 decoration-sky-400">
           Generate Assessment
@@ -153,7 +153,7 @@ export default function GenerateAssessment() {
         <section className="flex flex-col gap-4">
           <Heading number={2} title="Generate Assessment" />
           <div
-            className={`flex flex-col gap-4  border-sky-300 rounded-xl  ${
+            className={`flex flex-col gap-4  border-sky-300 bg-white rounded-xl  ${
               stage === 0
                 ? "h-0 overflow-hidden"
                 : stage === 1
@@ -239,7 +239,7 @@ export default function GenerateAssessment() {
           <Heading number={4} title="Publish Assessment" />
           <div
             className={`
-          flex flex-col gap-4  border-sky-300 rounded-xl  ${
+          flex flex-col gap-4  border-sky-300 bg-white rounded-xl  ${
             stage < 3
               ? "h-0 overflow-hidden"
               : stage === 3
