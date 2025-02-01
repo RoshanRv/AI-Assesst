@@ -52,6 +52,12 @@ const AssessmentForm = ({ assessment, setAssessment, completed }: Props) => {
     setAssessment(newAssessment);
   };
 
+  const handleSelectAnswer = (questionIndex: number, answer: string) => {
+    const newAssessment = [...assessment];
+    newAssessment[questionIndex]["selectedAnswer"] = answer;
+    setAssessment(newAssessment);
+  };
+
   return (
     <>
       {assessment.map((question, index) => (
@@ -66,6 +72,7 @@ const AssessmentForm = ({ assessment, setAssessment, completed }: Props) => {
           handleDeleteOption={handleDeleteOption}
           handleAddOption={handleAddOption}
           completed={completed}
+          handleSelectAnswer={handleSelectAnswer}
         />
       ))}
     </>
@@ -87,6 +94,7 @@ interface QuestionProps extends MCQQuestion {
   handleDeleteOption: (questionIndex: number, optionIndex: number) => void;
   handleAddOption: (questionIndex: number) => void;
   completed: boolean;
+  handleSelectAnswer: (questionIndex: number, answer: string) => void;
 }
 
 const Question = ({
@@ -94,6 +102,7 @@ const Question = ({
   options,
   correctAnswer,
   questionIndex,
+  selectedAnswer,
   handleQuestionUpdate,
   handleOptionUpdate,
   handleAnswerUpdate,
@@ -101,6 +110,7 @@ const Question = ({
   handleDeleteOption,
   handleAddOption,
   completed,
+  handleSelectAnswer,
 }: QuestionProps) => {
   const { currentUser } = useUser();
   return (
@@ -145,6 +155,7 @@ const Question = ({
       >
         {options.map((option, optionIndex) => {
           const isAnswer = option === correctAnswer;
+          const isSelected = option === selectedAnswer;
           return (
             <>
               {/* Option Number */}
@@ -155,15 +166,32 @@ const Question = ({
                 {optionIndex + 1}.
               </p>
               {/* Option */}
-              <TextareaAutosize
-                disabled={completed || currentUser?.role === "student"}
-                value={option}
-                className="w-full outline-0 text-base resize-none p-2 bg-neutral-200 rounded-md read-only:cursor-default"
-                placeholder="Enter the option"
-                onChange={(e) =>
-                  handleOptionUpdate(questionIndex, optionIndex, e.target.value)
-                }
-              />
+              {currentUser?.role === "teacher" ? (
+                <TextareaAutosize
+                  disabled={completed}
+                  value={option}
+                  className="w-full outline-0 text-base resize-none p-2 bg-neutral-200 rounded-md read-only:cursor-default"
+                  placeholder="Enter the option"
+                  onChange={(e) =>
+                    handleOptionUpdate(
+                      questionIndex,
+                      optionIndex,
+                      e.target.value
+                    )
+                  }
+                />
+              ) : (
+                <button
+                  onClick={() => handleSelectAnswer(questionIndex, option)}
+                  className={`w-full text-base p-2 bg-neutral-200 text-left rounded-md ${
+                    selectedAnswer === option
+                      ? "bg-violet-300"
+                      : "bg-neutral-200 hover:bg-violet-200"
+                  }`}
+                >
+                  {option}
+                </button>
+              )}
               {/* Answer */}
               {currentUser?.role === "teacher" && (
                 <>

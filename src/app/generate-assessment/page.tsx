@@ -125,7 +125,7 @@ export default function GenerateAssessment() {
 
   return (
     <main className="min-h-[calc(100vh-90px)] p-8 mb-20 bg-neutral-50">
-      <div className="max-w-2xl mx-auto flex flex-col gap-8">
+      <div className="max-w-6xl mx-auto flex flex-col gap-8">
         <h1 className="text-4xl font-semibold mb-8 text-black underline underline-offset-8 decoration-4 decoration-sky-400">
           Generate Assessment
         </h1>
