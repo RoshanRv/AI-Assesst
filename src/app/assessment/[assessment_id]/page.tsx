@@ -2,7 +2,7 @@
 import AssessmentForm from "@/components/AssessmentForm";
 import useUser from "@/store/useUser";
 import axios from "axios";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
@@ -15,6 +15,7 @@ const page = ({ params }: Props) => {
   const [assessment, setAssessment] = useState<MCQQuestion[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const router = useRouter();
   const { currentUser } = useUser();
 
   useEffect(() => {
@@ -39,6 +40,16 @@ const page = ({ params }: Props) => {
     return score;
   };
 
+  const isAllOptionSelected = () => {
+    let isFilled = true;
+    assessment.forEach((question) => {
+      if (question.selectedAnswer === undefined) {
+        isFilled = false;
+      }
+    });
+    return isFilled;
+  };
+
   // Save Assessment
   const saveAssessment = async () => {
     if (saving) return;
@@ -55,9 +66,24 @@ const page = ({ params }: Props) => {
         toast.success(res.data.message);
       } else {
         // TODO: Save Students Score
-        const score = calculateScore();
-        const percentage = (score / assessment.length) * 100;
-        console.log(percentage);
+        if (isAllOptionSelected()) {
+          const score = calculateScore();
+          const percentage = (score / assessment.length) * 100;
+          const res = await axios.post(
+            `/api/assessment/${(await params).assessment_id}`,
+            {
+              assessmentId: (await params).assessment_id,
+              studentId: currentUser?._id,
+              score,
+              percentage,
+            }
+          );
+
+          toast.success(res.data.message);
+          router.back();
+        } else {
+          toast.error("Please select all the options");
+        }
       }
     } catch (error: any) {
       toast.error(error.response.data.error);
