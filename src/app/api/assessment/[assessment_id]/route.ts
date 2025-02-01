@@ -2,14 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import connectDB from "@/utils/db";
 import Assessment from "@/model/assessment.model";
 import Score from "@/model/score.model";
+import mongoose from "mongoose";
 
 export async function GET(
   req: NextRequest,
   { params }: { params: { assessment_id: string } }
 ) {
   try {
-    const { assessment_id } = await params;
+    const { assessment_id } = params;
     await connectDB();
+
     if (!assessment_id) {
       return NextResponse.json(
         { error: "Assessment ID is required" },
@@ -29,13 +31,11 @@ export async function POST(req: NextRequest) {
     await connectDB();
     const { assessmentId, studentId, score, percentage } = await req.json();
 
-    console.log(assessmentId, studentId, score, percentage);
-
     if (
       !assessmentId ||
       !studentId ||
-      score == undefined ||
-      percentage == undefined
+      score === undefined ||
+      percentage === undefined
     ) {
       return NextResponse.json(
         {
@@ -45,25 +45,40 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const isScoreExist = await Score.find({ assessmentId, studentId });
-    if (isScoreExist.length > 0) {
-      await Score.findOneAndUpdate(
-        { assessmentId, studentId },
-        { score, percentage }
-      );
-    } else {
-      await Score.create({
-        assessmentId,
-        studentId,
+    // Convert string IDs to ObjectIds - Fixed constructor
+    const assessmentObjectId = new mongoose.Types.ObjectId(assessmentId);
+    const studentObjectId = new mongoose.Types.ObjectId(studentId);
+
+    // Using findOneAndUpdate with upsert option
+    await Score.findOneAndUpdate(
+      {
+        assessment: assessmentObjectId,
+        student: studentObjectId,
+      },
+      {
+        assessment: assessmentObjectId,
+        student: studentObjectId,
         totalScore: score,
-        percentage,
-      });
-    }
+        percentage: percentage,
+      },
+      {
+        upsert: true, // Create if doesn't exist
+        new: true, // Return the updated document
+      }
+    );
+
     return NextResponse.json(
-      { message: "Assessment created" },
+      { message: "Assessment Submitted Successfully" },
       { status: 201 }
     );
   } catch (error: any) {
+    // Handle duplicate key error specifically
+    if (error.code === 11000) {
+      return NextResponse.json(
+        { error: "Score already exists for this student and assessment" },
+        { status: 400 }
+      );
+    }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

@@ -2,32 +2,59 @@
 import AssessmentForm from "@/components/AssessmentForm";
 import useUser from "@/store/useUser";
 import axios from "axios";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
-type Props = {
-  params: Promise<{ assessment_id: string }>;
-};
-
-const page = ({ params }: Props) => {
+const page = () => {
   const title = useSearchParams().get("assessment_title");
   const [assessment, setAssessment] = useState<MCQQuestion[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const router = useRouter();
   const { currentUser } = useUser();
+  const { assessment_id } = useParams();
+  const [score, setScore] = useState<{
+    totalScore: number;
+    percentage: { $numberDecimal: string };
+  } | null>(null);
+  const [showResult, setShowResult] = useState(false);
 
-  useEffect(() => {
-    async function fetchAssessment() {
-      const res = await axios.get(
-        `/api/assessment/${(await params).assessment_id}`
-      );
+  async function fetchAssessment() {
+    try {
+      const res = await axios.get(`/api/assessment/${assessment_id}`);
       setAssessment(res.data.assessments[0].questions);
+    } catch (error: any) {
+      toast.error(error.response.data.error);
+    }
+  }
+
+  async function fetchScore() {
+    try {
+      const res = await axios.get(
+        `/api/score?assessmentId=${assessment_id}&studentId=${currentUser?._id}`
+      );
+      const score = res.data.score;
+      if (score) {
+        setScore(score);
+        setShowResult(true);
+      }
+    } catch (error: any) {
+      toast.error(error.response.data.error);
+    } finally {
       setLoading(false);
     }
+  }
+
+  useEffect(() => {
     fetchAssessment();
   }, []);
+
+  useEffect(() => {
+    if (currentUser?.role === "student") {
+      fetchScore();
+    }
+  }, [currentUser]);
 
   // calculate score
   const calculateScore = () => {
@@ -58,29 +85,30 @@ const page = ({ params }: Props) => {
       setSaving(true);
       // Teacher can Update Assessment
       if (currentUser?.role === "teacher") {
-        const assessment_id = (await params).assessment_id;
         const res = await axios.put(`/api/assessment`, {
           id: assessment_id,
           questions: assessment,
         });
         toast.success(res.data.message);
+        router.back();
       } else {
         // TODO: Save Students Score
         if (isAllOptionSelected()) {
           const score = calculateScore();
           const percentage = (score / assessment.length) * 100;
-          const res = await axios.post(
-            `/api/assessment/${(await params).assessment_id}`,
-            {
-              assessmentId: (await params).assessment_id,
-              studentId: currentUser?._id,
-              score,
-              percentage,
-            }
-          );
+          const res = await axios.post(`/api/assessment/${assessment_id}`, {
+            assessmentId: assessment_id,
+            studentId: currentUser?._id,
+            score,
+            percentage,
+          });
 
           toast.success(res.data.message);
-          router.back();
+          setScore({
+            totalScore: score,
+            percentage: { $numberDecimal: `${percentage}` },
+          });
+          setShowResult(true);
         } else {
           toast.error("Please select all the options");
         }
@@ -102,22 +130,61 @@ const page = ({ params }: Props) => {
           <p>Loading...</p>
         ) : (
           <section className="flex flex-col gap-10">
-            <AssessmentForm
-              assessment={assessment}
-              setAssessment={setAssessment}
-              completed={false}
-            />
-            <button
-              disabled={saving}
-              onClick={saveAssessment}
-              className="bg-violet-300 py-2 hover:bg-violet-200 disabled:bg-violet-200 disabled:text-black/70 h-full transition-all duration-300 text-black font-medium text-lg rounded-md px-2"
-            >
-              {saving
-                ? "Saving..."
-                : currentUser?.role === "teacher"
-                ? "Save"
-                : "Submit"}
-            </button>
+            {/* Existing Score / Result */}
+            {showResult && score ? (
+              <div className="flex flex-col gap-4 bg-white p-6 rounded-lg border-4 border-sky-300">
+                <h2 className="text-2xl font-bold text-black">Your Results</h2>
+                <div className="flex flex-col gap-2">
+                  <p className="text-lg">
+                    Score:{" "}
+                    <span className="font-semibold">{score.totalScore}</span>{" "}
+                    out of {assessment.length}
+                  </p>
+                  <p className="text-lg">
+                    Percentage:{" "}
+                    <span className="font-semibold">
+                      {score.percentage.$numberDecimal}%
+                    </span>
+                  </p>
+                </div>
+                {Number(score.percentage.$numberDecimal) >= 70 ? (
+                  <p className="text-emerald-500 font-medium text-lg">
+                    Great job! You passed the assessment!
+                  </p>
+                ) : (
+                  <p className="text-red-400 font-medium text-lg">
+                    Keep practicing! You can do better next time.
+                  </p>
+                )}
+                <button
+                  onClick={() => {
+                    setShowResult(false);
+                  }}
+                  className="bg-violet-300 py-2 hover:bg-violet-200 hover:text-black/70 transition-all duration-300 text-black font-medium text-lg rounded-md px-4 mt-2"
+                >
+                  Retake Assessment
+                </button>
+              </div>
+            ) : (
+              <>
+                <AssessmentForm
+                  assessment={assessment}
+                  setAssessment={setAssessment}
+                  completed={false}
+                />
+                <button
+                  disabled={saving}
+                  onClick={saveAssessment}
+                  className="bg-violet-300 py-2 hover:bg-violet-200 disabled:bg-violet-200 disabled:text-black/70 h-full transition-all duration-300 text-black font-medium text-lg rounded-md px-2"
+                >
+                  {saving
+                    ? "Saving..."
+                    : currentUser?.role === "teacher"
+                    ? "Save"
+                    : "Submit"}
+                </button>
+              </>
+            )}
           </section>
         )}
       </div>

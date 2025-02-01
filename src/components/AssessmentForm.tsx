@@ -62,7 +62,7 @@ const AssessmentForm = ({ assessment, setAssessment, completed }: Props) => {
     <>
       {assessment.map((question, index) => (
         <Question
-          //   key={`${index}-${question.question}`}
+          key={`${index}-${question._id || question.question}`}
           {...question}
           questionIndex={index}
           handleQuestionUpdate={handleQuestionUpdate}
@@ -184,7 +184,7 @@ const Question = ({
                 <button
                   onClick={() => handleSelectAnswer(questionIndex, option)}
                   className={`w-full text-base p-2 bg-neutral-200 text-left rounded-md ${
-                    selectedAnswer === option
+                    isSelected
                       ? "bg-violet-300"
                       : "bg-neutral-200 hover:bg-violet-200"
                   }`}

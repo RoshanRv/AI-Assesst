@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import Course from "./course.model";
 
 const assessmentSchema = new mongoose.Schema({
   title: {
@@ -36,7 +37,7 @@ const assessmentSchema = new mongoose.Schema({
   },
   course: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Course",
+    ref: Course.modelName,
   },
   createdAt: {
     type: Date,
