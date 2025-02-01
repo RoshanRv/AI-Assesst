@@ -2,6 +2,7 @@ interface MCQQuestion {
   question: string;
   options: string[];
   correctAnswer: string;
+  selectedAnswer?: string; // For Student
 }
 
 interface Course {
