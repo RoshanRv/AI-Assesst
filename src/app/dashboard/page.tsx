@@ -67,7 +67,8 @@ export default function Dashboard() {
               {assessments.map((assessment) => (
                 <div
                   key={assessment._id}
-                  className="p-6 bg-white border-2 border-sky-300 rounded-md hover:border-violet-300 transition-all duration-200 hover:shadow-md"
+                  onClick={() => router.push(`/assessment/${assessment._id}`)}
+                  className="p-6 bg-white border-2 cursor-pointer border-sky-300 rounded-md hover:border-violet-300 transition-all duration-200 hover:shadow-md"
                 >
                   <h3 className="text-xl font-medium mb-3 text-black">
                     {assessment.title}
