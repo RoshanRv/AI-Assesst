@@ -96,7 +96,7 @@ export default function Dashboard() {
                     {currentUser?.role === "teacher" && (
                       <Link
                         className="bg-violet-300 py-1 hover:bg-violet-200 text-center hover:text-black/70 transition-all duration-300 text-black  text-lg rounded-md w-full mt-6"
-                        href={`/assessment/${assessment._id}?assessment_title=${assessment.title}`}
+                        href={`/assessment/${assessment._id}/submissions?assessment_title=${assessment.title}`}
                       >
                         View Results
                       </Link>
