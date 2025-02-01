@@ -6,6 +6,7 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import moment from "moment";
+import Link from "next/link";
 
 export default function Dashboard() {
   const router = useRouter();
@@ -67,24 +68,39 @@ export default function Dashboard() {
               {assessments.map((assessment) => (
                 <div
                   key={assessment._id}
-                  onClick={() =>
-                    router.push(
-                      `/assessment/${assessment._id}?assessment_title=${assessment.title}`
-                    )
-                  }
-                  className="p-6 bg-white border-2 cursor-pointer border-sky-300 rounded-md hover:border-violet-300 transition-all duration-200 hover:shadow-md"
+                  className="p-6 bg-white border-4 border-sky-300 rounded-md hover:border-violet-300 transition-all duration-200 hover:shadow-md"
                 >
                   <h3 className="text-xl font-medium mb-3 text-black">
                     {assessment.title}
                   </h3>
                   <div className="flex items-center gap-3 justify-between">
-                    <span className="px-3 py-1 bg-violet-300 rounded-md text-sm">
+                    {/* ## Questions COunt ### */}
+                    <span className="px-3 py-1 bg-pink-300 rounded-md text-sm">
                       {assessment.questions.length} questions
                     </span>
                     {/* ## DATE ## */}
                     <p className="text-black text-sm">
                       {moment(assessment.createdAt).format("MMM DD, YYYY")}
                     </p>
+                  </div>
+                  {/* ## BUTTON ## */}
+                  <div className="flex items-center justify-center gap-2 w-full">
+                    <Link
+                      className="bg-violet-300 py-1 hover:bg-violet-200 text-center hover:text-black/70 transition-all duration-300 text-black  text-lg rounded-md w-full mt-6"
+                      href={`/assessment/${assessment._id}?assessment_title=${assessment.title}`}
+                    >
+                      {currentUser?.role === "teacher"
+                        ? "Edit"
+                        : "Start Assessment"}
+                    </Link>
+                    {currentUser?.role === "teacher" && (
+                      <Link
+                        className="bg-violet-300 py-1 hover:bg-violet-200 text-center hover:text-black/70 transition-all duration-300 text-black  text-lg rounded-md w-full mt-6"
+                        href={`/assessment/${assessment._id}?assessment_title=${assessment.title}`}
+                      >
+                        View Results
+                      </Link>
+                    )}
                   </div>
                 </div>
               ))}
