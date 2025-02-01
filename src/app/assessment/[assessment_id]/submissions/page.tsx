@@ -45,7 +45,7 @@ export default function Submissions() {
 
   return (
     <main className="min-h-[calc(100vh-100px)] bg-neutral-50 p-8">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-6xl mx-auto px-6">
         <h1 className="text-3xl font-bold mb-8 underline decoration-sky-300 decoration-4 underline-offset-8">
           {`${assessment_title} - Submissions`}
         </h1>
